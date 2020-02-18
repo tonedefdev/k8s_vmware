@@ -85,7 +85,7 @@
       state: powered-on
     delegate_to: localhost
 
-  - name: Create k8s master API load balancer
+  - name: Create k8s-ha-lb
     vmware_guest:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -112,7 +112,7 @@
       wait_for_customization: false
     delegate_to: localhost
 
-  - name: Enable nics
+  - name: Enable nics on k8s-ha-lb
     vmware_guest_network:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -130,7 +130,7 @@
           start_connected: true
     delegate_to: localhost
 
-  - name: Turn VM on
+  - name: Turn on k8s-ha-lb 
     vmware_guest_powerstate:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -140,3 +140,147 @@
       name: k8s-ha-lb
       state: powered-on
     delegate_to: localhost
+
+  - name: "Create {{ item.name }}"
+    vmware_guest:
+      hostname: "{{ vcenter_host }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter: "{{ vcenter_datacenter }}"
+      validate_certs: no
+      name: "{{ item.name }}"
+      state: poweredoff
+      esxi_hostname: "{{ esxi_hostname }}"
+      folder: "/{{ vcenter_datacenter }}/vm"
+      template: ubuntu_vm_template
+      disk:
+      - size_gb: 50
+        type: thin
+        datastore: "{{ vcenter_datastore }}"
+      hardware:
+        memory_mb: 2048
+        num_cpus: 2
+      networks:
+        - name: k8s_portgroup
+          ip: "{{ item.ip }}"
+          netmask: 255.255.255.0
+          gateway: 192.168.5.1
+          type: static
+          dns_servers: 8.8.8.8
+          start_connected: true
+      customization:
+        hostname: "{{ item.name }}"
+        dns_servers:
+        - 8.8.8.8
+      wait_for_customization: false
+    delegate_to: localhost
+    loop:
+    - { name: k8s-ha-master-1, ip: 192.168.5.11 }
+    - { name: k8s-ha-master-2, ip: 192.168.5.12 }
+
+  - name: "Enable nic on {{ item }}"
+    vmware_guest_network:
+      hostname: "{{ vcenter_host }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter: "{{ vcenter_datacenter }}"
+      validate_certs: no
+      name: "{{ item }}"
+      gather_network_info: false
+      networks:
+        - name: k8s_portgroup
+          esxi_hostname: "{{ vcenter_host }}"
+          state: present
+          device_type: vmxnet3
+          connected: true
+          start_connected: true
+    delegate_to: localhost
+    loop:
+      - k8s-ha-master-1
+      - k8s-ha-master-2
+
+  - name: "Turn on {{ item }} "
+    vmware_guest_powerstate:
+      hostname: "{{ vcenter_host }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      folder: "/{{ vcenter_datacenter }}/vm"
+      validate_certs: no
+      name: "{{ item }}"
+      state: powered-on
+    delegate_to: localhost
+    loop:
+      - k8s-ha-master-1
+      - k8s-ha-master-2
+
+  - name: "Create {{ item.name }} "
+    vmware_guest:
+      hostname: "{{ vcenter_host }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter: "{{ vcenter_datacenter }}"
+      validate_certs: no
+      name: "{{ item.name }}"
+      state: poweredoff
+      esxi_hostname: "{{ esxi_hostname }}"
+      folder: "/{{ vcenter_datacenter }}/vm"
+      template: ubuntu_vm_template
+      disk:
+      - size_gb: 50
+        type: thin
+        datastore: "{{ vcenter_datastore }}"
+      hardware:
+        memory_mb: 512
+        num_cpus: 1
+      networks:
+        - name: k8s_portgroup
+          ip: "{{ item.ip }}"
+          netmask: 255.255.255.0
+          gateway: 192.168.5.1
+          type: static
+          dns_servers: 8.8.8.8
+          start_connected: true
+      customization:
+        hostname: "{{ item.name }}"
+        dns_servers:
+        - 8.8.8.8
+      wait_for_customization: false
+    delegate_to: localhost
+    loop:
+      - { name: k8s-ha-worker-1, ip: 192.168.5.21 }  
+      - { name: k8s-ha-worker-2, ip: 192.168.5.22 }
+
+  - name: "Enable nics on {{ item }}"
+    vmware_guest_network:
+      hostname: "{{ vcenter_host }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter: "{{ vcenter_datacenter }}"
+      validate_certs: no
+      name: "{{ item }}"
+      gather_network_info: false
+      networks:
+        - name: k8s_portgroup
+          esxi_hostname: "{{ vcenter_host }}"
+          state: present
+          device_type: vmxnet3
+          connected: true
+          start_connected: true
+    delegate_to: localhost
+    loop:
+      - k8s-ha-worker-1
+      - k8s-ha-worker-2
+
+  - name: "Turn on {{ item }}"
+    vmware_guest_powerstate:
+      hostname: "{{ vcenter_host }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      folder: "/{{ vcenter_datacenter }}/vm"
+      validate_certs: no
+      name: "{{ item }}"
+      state: powered-on
+    delegate_to: localhost
+    loop:
+      - k8s-ha-worker-1
+      - k8s-ha-worker-2

@@ -2,6 +2,7 @@
 vcenter_host: 192.168.1.100
 vcenter_datacenter: HOMELABS
 vcenter_username: administrator@homelab.local
+vcenter_datastore: datastore1
 vcenter_password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           64396665386237386433356263356132623032343163306435626330663233306237323435616534
