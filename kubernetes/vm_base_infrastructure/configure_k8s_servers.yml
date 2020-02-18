@@ -15,6 +15,6 @@
 
   - name: Allow network forwarding in IP tables
     shell:
-      cmd: sysctl net.bridge.bridge-nf-call-iptables=1
+      cmd: echo 1 > /proc/sys/net/ipv4/ip_forward
     become: true
     
