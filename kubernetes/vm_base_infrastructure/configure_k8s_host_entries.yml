@@ -12,3 +12,9 @@
         192.168.5.30 lb
         EOF
     become: true
+
+  - name: Allow network forwarding in IP tables
+    shell:
+      cmd: sysctl net.bridge.bridge-nf-call-iptables=1
+    become: true
+    
