@@ -50,7 +50,7 @@
       wait_for_customization: false
     delegate_to: localhost
 
-  - name: Enable nics
+  - name: Enable nics on k8s router
     vmware_guest_network:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -74,7 +74,7 @@
           start_connected: true
     delegate_to: localhost
         
-  - name: Turn VM on
+  - name: Turn k8s router
     vmware_guest_powerstate:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -112,7 +112,7 @@
       wait_for_customization: false
     delegate_to: localhost
 
-  - name: Enable nics on k8s-ha-lb
+  - name: Enable nic on k8s-ha-lb
     vmware_guest_network:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -141,7 +141,7 @@
       state: powered-on
     delegate_to: localhost
 
-  - name: "Create {{ item.name }}"
+  - name: "Create k8s master nodes"
     vmware_guest:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -178,7 +178,7 @@
     - { name: k8s-ha-master-1, ip: 192.168.5.11 }
     - { name: k8s-ha-master-2, ip: 192.168.5.12 }
 
-  - name: "Enable nic on {{ item }}"
+  - name: "Enable nics on k8s master nodes"
     vmware_guest_network:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -199,7 +199,7 @@
       - k8s-ha-master-1
       - k8s-ha-master-2
 
-  - name: "Turn on {{ item }} "
+  - name: "Turn on k8s master nodes"
     vmware_guest_powerstate:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -213,7 +213,7 @@
       - k8s-ha-master-1
       - k8s-ha-master-2
 
-  - name: "Create {{ item.name }} "
+  - name: "Create k8s worker nodes"
     vmware_guest:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -250,7 +250,7 @@
       - { name: k8s-ha-worker-1, ip: 192.168.5.21 }  
       - { name: k8s-ha-worker-2, ip: 192.168.5.22 }
 
-  - name: "Enable nics on {{ item }}"
+  - name: "Enable nics k8s worker nodes"
     vmware_guest_network:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"
@@ -271,7 +271,7 @@
       - k8s-ha-worker-1
       - k8s-ha-worker-2
 
-  - name: "Turn on {{ item }}"
+  - name: "Turn on k8s worker nodes"
     vmware_guest_powerstate:
       hostname: "{{ vcenter_host }}"
       username: "{{ vcenter_username }}"

@@ -14,7 +14,7 @@
       jump: MASQUERADE
     become: yes
 
-  - name: Configure k8s router interal facing network
+  - name: Configure k8s router internal facing network
     iptables:
       chain: INPUT
       in_interface: ens224
