@@ -1,5 +1,5 @@
 ---
-- hosts: k8s_router
+- hosts: localhost
   tasks:
   - name: Create k8s_network vSwitch
     vmware_vswitch:
@@ -140,70 +140,3 @@
       name: k8s-ha-lb
       state: powered-on
     delegate_to: localhost
-
-  - name: Enable ip forwarding
-    shell:
-      cmd: echo 1 > /proc/sys/net/ipv4/ip_forward
-    become: yes
-
-  - name: Configure k8s router NAT rule outbound to VM Network
-    iptables:
-      table: nat
-      chain: POSTROUTING
-      out_interface: ens192
-      jump: MASQUERADE
-    become: yes
-
-  - name: Configure k8s router interal facing network
-    iptables:
-      chain: INPUT
-      in_interface: ens224
-      jump: ACCEPT
-    become: yes
-  
-  - name: Configure k8s router to allow related and established connections from VM Network
-    iptables:
-      chain: INPUT
-      in_interface: ens192
-      match: state
-      ctstate: ESTABLISHED,RELATED
-      jump: ACCEPT
-    become: yes
-
-  - name: Configure k8s router NAT rule outbound to k8s_portgroup
-    iptables:
-      table: nat
-      chain: POSTROUTING
-      out_interface: ens224
-      jump: MASQUERADE
-    become: yes
-
-  - name: Configure k8s router VM Network adapter
-    iptables:
-      chain: INPUT
-      in_interface: ens192
-      jump: ACCEPT
-    become: yes
-  
-  - name: Configure k8s router to allow related and established connections from internal network
-    iptables:
-      chain: INPUT
-      in_interface: ens224
-      match: state
-      ctstate: ESTABLISHED,RELATED
-      jump: ACCEPT
-    become: yes
-
-  - name: Configure k8s router output
-    iptables:
-      chain: OUTPUT
-      jump: ACCEPT
-    become: yes
-
-    
-
-
-
-
-
-
