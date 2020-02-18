@@ -1,0 +1,28 @@
+---
+- hosts: k8s_wokers
+  tasks:
+  - name: Install Base Packages
+    apt:
+      pkg:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+    become: yes
+
+  - name: Download Docker
+    shell:
+      cmd: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+        add-apt-repository \
+          "deb https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+          $(lsb_release -cs) \
+          stable" \
+    become: yes
+
+  - name: Apt update & install Docker
+    shell:
+      cmd: |
+        apt-get update
+        apt-get install -y docker-ce=$(apt-cache madison docker-ce | grep 18.06 | head -1 | awk '{print $3}')
+    become: yes
