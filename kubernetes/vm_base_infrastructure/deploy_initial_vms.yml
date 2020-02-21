@@ -106,7 +106,7 @@
           dns_servers: 8.8.8.8
           start_connected: true
       customization:
-        hostname: k8s-ha-lb
+        hostname: lb
         dns_servers:
         - 8.8.8.8
       wait_for_customization: false
@@ -169,14 +169,14 @@
           dns_servers: 8.8.8.8
           start_connected: true
       customization:
-        hostname: "{{ item.name }}"
+        hostname: "{{ item.hostname }}"
         dns_servers:
         - 8.8.8.8
       wait_for_customization: false
     delegate_to: localhost
     loop:
-    - { name: k8s-ha-master-1, ip: 192.168.5.11 }
-    - { name: k8s-ha-master-2, ip: 192.168.5.12 }
+    - { name: k8s-ha-master-1, ip: 192.168.5.11, hostname: master-1 }
+    - { name: k8s-ha-master-2, ip: 192.168.5.12, hostname: master-2 }
 
   - name: "Enable nics on k8s master nodes"
     vmware_guest_network:
@@ -247,8 +247,8 @@
       wait_for_customization: false
     delegate_to: localhost
     loop:
-      - { name: k8s-ha-worker-1, ip: 192.168.5.21 }  
-      - { name: k8s-ha-worker-2, ip: 192.168.5.22 }
+      - { name: k8s-ha-worker-1, ip: 192.168.5.21, hostname: worker-1 }  
+      - { name: k8s-ha-worker-2, ip: 192.168.5.22, hostname: worker-2 }
 
   - name: "Enable nics k8s worker nodes"
     vmware_guest_network:
