@@ -32,10 +32,10 @@
       folder: "/{{ vcenter_datacenter }}/vm"
       template: ubuntu_vm_template
       networks:
-        - name: VM Network
-          ip: 192.168.1.200
-          netmask: 255.255.255.0
-          gateway: 192.168.1.1
+        - name: "{{ vcenter_vm_network_name }}"
+          ip: "{{ vcenter_vm_network_ip }}"
+          netmask: "{{ vcenter_vm_network_mask }}"
+          gateway: "{{ vcenter_vm_network_gw }}"
           start_connected: true
           type: static
           dns_servers: 8.8.8.8
